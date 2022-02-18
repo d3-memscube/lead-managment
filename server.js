@@ -4,6 +4,9 @@ const cors = require("cors");
 const bodyParser = require('body-parser');
 const leadModel = require('./models/LeadSchema');
 const { response } = require("express");
+const csv = require('csv-parser')
+const fs = require('fs')
+const results = [];
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -111,6 +114,14 @@ app.post('/post/lead/bulk', async (req, res) => {
         res.status(500).send(err);
         console.log('error', err);
     }
+})
+
+app.post('/convert/tojson', async (req, res) => {
+    const {data} = req.body;
+    fs.createReadStream(data).pipe(csv()).on('data', (data) => results.push(data)).on('end', () => {
+        console.log('results', results);
+        res.send(results);
+    });
 })
 
 app.delete('/delete/lead/:id', async (req, res) => {
